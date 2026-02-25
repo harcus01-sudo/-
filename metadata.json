@@ -1,0 +1,5 @@
+{
+  "name": "Sprout AI",
+  "description": "A gardening assistant app that identifies plants from a photo and provides detailed care instructions.",
+  "requestFramePermissions": []
+}
