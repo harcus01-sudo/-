@@ -148,7 +148,10 @@ export default function App() {
             finalMessageText = finalMessageText.replace(match[0], `\n\n![${imagePrompt}](${imageUrl})\n\n`);
           } catch (err: any) {
             console.error("Image generation error:", err);
-            const errMsg = err.message || "未知错误";
+            let errMsg = err.message || "未知错误";
+            if (errMsg.includes("429") || errMsg.includes("Quota exceeded") || errMsg.includes("limit: 0")) {
+              errMsg = "您的 API Key 免费层级不支持画图功能，请在 Google Cloud 开启计费 (Billing)。";
+            }
             finalMessageText = finalMessageText.replace(match[0], `\n\n*(❌ 图片生成失败: ${errMsg})*\n\n`);
           }
         }));
