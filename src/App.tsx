@@ -14,7 +14,9 @@ export default function App() {
     const saved = localStorage.getItem(CHAT_STORAGE_KEY);
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        // Filter out any empty messages that might have been saved during a refresh or error
+        return parsed.filter((msg: any) => msg.text && msg.text.trim() !== "");
       } catch (e) {
         return [];
       }
@@ -119,9 +121,13 @@ export default function App() {
         }
       }
       
+      if (!fullText) {
+        throw new Error("API returned an empty response.");
+      }
+      
       // Check for image generation tags
       let finalMessageText = fullText;
-      const imageMatches = [...fullText.matchAll(/\[GENERATE_IMAGE:\s*(.+?)\]/g)];
+      const imageMatches = [...fullText.matchAll(/`?\[GENERATE_IMAGE:\s*(.+?)\]`?/g)];
       
       if (imageMatches.length > 0) {
         let loadingText = fullText;
@@ -161,11 +167,11 @@ export default function App() {
       setChatMessages((prev) => {
         const newMessages = [...prev];
         const lastIndex = newMessages.length - 1;
-        if (!newMessages[lastIndex].text) {
-          newMessages[lastIndex].text = "抱歉，我遇到了一些错误，请重试。";
-        } else {
-          newMessages[lastIndex].text += "\n\n[连接中断，请重试]";
-        }
+        const lastMsg = newMessages[lastIndex];
+        newMessages[lastIndex] = {
+          ...lastMsg,
+          text: lastMsg.text ? lastMsg.text + "\n\n*(❌ 连接中断或发生错误，请重试)*" : "*(❌ 抱歉，我遇到了一些错误，请重试。)*"
+        };
         return newMessages;
       });
     } finally {
@@ -228,7 +234,7 @@ export default function App() {
                 </div>
               ) : (
                 <div className="prose prose-stone prose-emerald max-w-none prose-headings:font-medium prose-h3:text-lg prose-p:leading-relaxed">
-                  <Markdown>{plantInfo}</Markdown>
+                  <Markdown urlTransform={(value: string) => value}>{plantInfo}</Markdown>
                 </div>
               )}
             </section>
@@ -272,7 +278,7 @@ export default function App() {
                       {msg.role === "model" ? (
                         <div className="prose prose-sm prose-stone max-w-none">
                           {msg.text ? (
-                            <Markdown>{msg.text}</Markdown>
+                            <Markdown urlTransform={(value: string) => value}>{msg.text}</Markdown>
                           ) : (
                             <div className="flex items-center gap-2 text-stone-500 h-6">
                               <Loader2 className="w-4 h-4 animate-spin text-emerald-600" />
