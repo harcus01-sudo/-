@@ -145,14 +145,11 @@ export default function App() {
           const imagePrompt = match[1];
           try {
             const imageUrl = await generatePlantImage(imagePrompt);
-            if (imageUrl) {
-              finalMessageText = finalMessageText.replace(match[0], `\n\n![${imagePrompt}](${imageUrl})\n\n`);
-            } else {
-              finalMessageText = finalMessageText.replace(match[0], `\n\n*(❌ 图片生成失败)*\n\n`);
-            }
-          } catch (err) {
+            finalMessageText = finalMessageText.replace(match[0], `\n\n![${imagePrompt}](${imageUrl})\n\n`);
+          } catch (err: any) {
             console.error("Image generation error:", err);
-            finalMessageText = finalMessageText.replace(match[0], `\n\n*(❌ 图片生成失败)*\n\n`);
+            const errMsg = err.message || "未知错误";
+            finalMessageText = finalMessageText.replace(match[0], `\n\n*(❌ 图片生成失败: ${errMsg})*\n\n`);
           }
         }));
         

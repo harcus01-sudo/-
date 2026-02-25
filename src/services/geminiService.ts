@@ -25,14 +25,7 @@ export async function identifyPlant(base64Image: string, mimeType: string) {
 export async function generatePlantImage(prompt: string) {
   const response = await ai.models.generateContent({
     model: 'gemini-2.5-flash-image',
-    contents: {
-      parts: [{ text: prompt }],
-    },
-    config: {
-      imageConfig: {
-        aspectRatio: "1:1",
-      }
-    }
+    contents: prompt,
   });
   
   for (const part of response.candidates?.[0]?.content?.parts || []) {
@@ -40,7 +33,7 @@ export async function generatePlantImage(prompt: string) {
       return `data:${part.inlineData.mimeType || 'image/png'};base64,${part.inlineData.data}`;
     }
   }
-  return null;
+  throw new Error("API did not return image data");
 }
 
 export function createGardeningChat() {
